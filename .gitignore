@@ -1,16 +1,26 @@
-# Python virtual environment
+# Virtual Environment
 venv/
 
-# Bytecode / cache
+# Python cache
 __pycache__/
 *.pyc
 
-# Environment variables
-.env
+# DVC data
+/data/raw/*
+/data/processed/*
+!data/raw/*.dvc
+!data/processed/*.dvc
 
-# DVC cache (optional)
-.dvc/cache/
+# MLflow
+mlruns/
 
-# data
+# Airflow
+airflow.db
+logs/
 
-/data
+# Models
+models/*.pkl
+
+# OS files
+.DS_Store
+Thumbs.db
