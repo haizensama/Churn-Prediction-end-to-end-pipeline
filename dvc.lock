@@ -1,0 +1,22 @@
+schema: '2.0'
+stages:
+  preprocessing:
+    cmd: python src/preprocessing.py
+    deps:
+    - path: data/raw/Churn Prediction DataSet.csv
+      hash: md5
+      md5: 0f9de68e012bd3aed5fa7cdc9fc421af
+      size: 977501
+    - path: src/preprocessing.py
+      hash: md5
+      md5: 3cca798698da2607c064d4e2825dfc52
+      size: 1707
+    outs:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: b4033b98e25cc219c29338ea55c8bb08
+      size: 297040
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 2ca094b1ba9e24122c48729a84d4928b
+      size: 1185068

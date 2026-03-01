@@ -1,0 +1,12 @@
+stages:
+  preprocessing:
+    cmd: python src/preprocessing.py
+    deps:
+      - data/raw/Churn Prediction DataSet.csv
+      - src/preprocessing.py
+    outs:
+      - data/processed/X_train.csv
+      - data/processed/X_test.csv
+      - data/processed/y_train.csv
+      - data/processed/y_test.csv
+
