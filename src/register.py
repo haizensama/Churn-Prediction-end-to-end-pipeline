@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
 import mlflow
 from mlflow.tracking import MlflowClient
@@ -12,53 +15,55 @@ MLFLOW_TRACKING_URI = os.getenv(
 mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
 
 EXPERIMENT_NAME = "Churn_Prediction"
-MODELS = ["LogisticRegression", "RandomForest", "XGBoost"]
+MODELS = ["LogisticRegression", "RandomForest", "XGBoost"]  # model names in train.py
 
 def main():
-    client = MlflowClient()
+    try:
+        client = MlflowClient()
+        # Ensure experiment exists
+        experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
+        if experiment is None:
+            experiment_id = client.create_experiment(EXPERIMENT_NAME)
+            print(f"Experiment '{EXPERIMENT_NAME}' created with id {experiment_id}")
+        else:
+            experiment_id = experiment.experiment_id
+            print(f"Using existing experiment '{EXPERIMENT_NAME}' with id {experiment_id}")
 
-    # Ensure experiment exists
-    experiment = client.get_experiment_by_name(EXPERIMENT_NAME)
-    if experiment is None:
-        experiment_id = client.create_experiment(EXPERIMENT_NAME)
-        print(f"Experiment '{EXPERIMENT_NAME}' created with id {experiment_id}")
-    else:
-        experiment_id = experiment.experiment_id
-        print(f"Using existing experiment '{EXPERIMENT_NAME}' with id {experiment_id}")
+        # Register latest run for each model
+        for model_name in MODELS:
+            runs = client.search_runs(
+                experiment_ids=[experiment_id],
+                filter_string=f'tags.mlflow.runName = "{model_name}"',
+                order_by=["metrics.accuracy DESC"],
+                max_results=1
+            )
 
-    # Register latest run for each model
-    for model_name in MODELS:
-        # Search runs by model_name tag
-        runs = client.search_runs(
-            experiment_ids=[experiment_id],
-            filter_string=f'tags.model_name = "{model_name}"',
-            order_by=["metrics.accuracy DESC"],
-            max_results=1
-        )
+            if not runs:
+                print(f"No runs found for model: {model_name}")
+                continue
 
-        if not runs:
-            print(f"No runs found for model: {model_name}")
-            continue
+            latest_run = runs[0]
+            run_id = latest_run.info.run_id
+            model_uri = f"runs:/{run_id}/{model_name}"
 
-        latest_run = runs[0]
-        run_id = latest_run.info.run_id
-        model_uri = f"runs:/{run_id}/{model_name}"
+            try:
+                client.create_registered_model(model_name)
+                print(f"Registered model '{model_name}' created.")
+            except mlflow.exceptions.MlflowException:
+                # Model already exists, skip
+                pass
 
-        # Create registered model if it doesn't exist
-        try:
-            client.create_registered_model(model_name)
-            print(f"Registered model '{model_name}' created.")
-        except mlflow.exceptions.MlflowException:
-            # Already exists
-            pass
+            client.create_model_version(
+                name=model_name,
+                source=model_uri,
+                run_id=run_id
+            )
+            print(f"✅ Model '{model_name}' registered from run {run_id}")
 
-        # Register the model version
-        client.create_model_version(
-            name=model_name,
-            source=model_uri,
-            run_id=run_id
-        )
-        print(f"Model '{model_name}' registered from run {run_id}")
+    except mlflow.exceptions.MlflowException as e:
+        print("⚠️ Error setting up MLflow client. Check tracking URI and token.")
+        print(e)
 
 if __name__ == "__main__":
     main()
+
