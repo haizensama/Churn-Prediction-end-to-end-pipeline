@@ -57,3 +57,29 @@ stages:
       md5: 6314f59439757fc9e4aaa2d976bf158a.dir
       size: 19334031
       nfiles: 3
+  evaluate:
+    cmd: python3 src/evaluate.py
+    deps:
+    - path: data/processed/X_test.csv
+      hash: md5
+      md5: fc2db52eb96c70cd9f6cae6770837019
+      size: 269967
+    - path: data/processed/y_test.csv
+      hash: md5
+      md5: f0270f5ed4fa7449598f897bb4eb34c2
+      size: 2824
+    - path: models
+      hash: md5
+      md5: 6314f59439757fc9e4aaa2d976bf158a.dir
+      size: 19334031
+      nfiles: 3
+    - path: src/evaluate.py
+      hash: md5
+      md5: 4e7417a854c2d6f73932ef756b5a8272
+      size: 3062
+    outs:
+    - path: evaluation
+      hash: md5
+      md5: ffa265c7103aafcd0a16c6a98400951b.dir
+      size: 162990
+      nfiles: 6

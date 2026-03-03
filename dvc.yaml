@@ -20,3 +20,12 @@ stages:
     - src/train.py
     outs:
     - models
+  evaluate:
+    cmd: python3 src/evaluate.py
+    deps:
+    - data/processed/X_test.csv
+    - data/processed/y_test.csv
+    - models
+    - src/evaluate.py
+    outs:
+    - evaluation
