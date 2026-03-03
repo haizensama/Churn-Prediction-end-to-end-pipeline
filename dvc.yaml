@@ -20,6 +20,7 @@ stages:
     - src/train.py
     outs:
     - models
+
   evaluate:
     cmd: python3 src/evaluate.py
     deps:
@@ -29,3 +30,4 @@ stages:
     - src/evaluate.py
     outs:
     - evaluation
+

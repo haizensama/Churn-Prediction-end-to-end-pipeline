@@ -41,6 +41,7 @@ os.makedirs("models", exist_ok=True)
 # -------------------------
 for name, model in models.items():
     with mlflow.start_run(run_name=name):
+        mlflow.set_tag("model_name", name)  # ✅ Tag the model
 
         # Train model
         model.fit(X_train, y_train)
