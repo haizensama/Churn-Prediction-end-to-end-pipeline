@@ -5,76 +5,104 @@ import os
 import pandas as pd
 import mlflow
 import mlflow.sklearn
-import joblib
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+from sklearn.model_selection import GridSearchCV
+from sklearn.metrics import roc_auc_score
+import joblib
 
-# -------------------------
-# Load processed data
-# -------------------------
-X_train = pd.read_csv("data/processed/X_train.csv")
-X_test = pd.read_csv("data/processed/X_test.csv")
-y_train = pd.read_csv("data/processed/y_train.csv").values.ravel()
-y_test = pd.read_csv("data/processed/y_test.csv").values.ravel()
+def train_model():
+    # -------------------------
+    # Authentication for DagsHub
+    # -------------------------
+    os.environ["MLFLOW_TRACKING_USERNAME"] = "haizensama"
+    os.environ["MLFLOW_TRACKING_PASSWORD"] = "36c35c7a76fa8d3ab1be9fd7b1b0df25c5713e41"   # <-- replace with your token
 
-# -------------------------
-# Set MLflow experiment
-# -------------------------
-mlflow.set_experiment("Churn_Prediction")
+    # -------------------------
+    # MLflow tracking (DagsHub)
+    # -------------------------
+    MLFLOW_TRACKING_URI = "https://dagshub.com/haizensama/mlops22ug2-0179.mlflow"
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
+    experiment_name = "Churn_Prediction"
+    mlflow.set_experiment(experiment_name)
 
-# -------------------------
-# Define models
-# -------------------------
-models = {
-    "LogisticRegression": LogisticRegression(max_iter=1000),
-    "RandomForest": RandomForestClassifier(n_estimators=100, random_state=42),
-    "XGBoost": XGBClassifier(use_label_encoder=False, eval_metric='logloss', random_state=42)
-}
+    # -------------------------
+    # Load processed data
+    # -------------------------
+    X_train = pd.read_csv("data/processed/X_train.csv")
+    X_test = pd.read_csv("data/processed/X_test.csv")
+    y_train = pd.read_csv("data/processed/y_train.csv").values.ravel()
+    y_test = pd.read_csv("data/processed/y_test.csv").values.ravel()
+    X_train.fillna(0, inplace=True)
+    X_test.fillna(0, inplace=True)
 
-# Ensure models directory exists
-os.makedirs("models", exist_ok=True)
+    # -------------------------
+    # Define models + hyperparameters
+    # -------------------------
+    model_configs = {
+        "LogisticRegression": {
+            "model": LogisticRegression(max_iter=1000),
+            "params": {"C": [0.1, 1], "solver": ["liblinear"]}
+        },
+        "RandomForest": {
+            "model": RandomForestClassifier(random_state=42),
+            "params": {"n_estimators": [100], "max_depth": [10, None], "min_samples_split": [2]}
+        },
+        "XGBoost": {
+            "model": XGBClassifier(eval_metric="logloss", random_state=42),
+            "params": {"n_estimators": [100], "max_depth": [3, 6], "learning_rate": [0.1]}
+        }
+    }
 
-# -------------------------
-# Train, log, and save models
-# -------------------------
-for name, model in models.items():
-    with mlflow.start_run(run_name=name):
-        mlflow.set_tag("model_name", name)  # ✅ Tag the model
+    best_model_name = None
+    best_roc_auc = -1
+    os.makedirs("models", exist_ok=True)
 
-        # Train model
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        y_proba = model.predict_proba(X_test)[:, 1]  # probability for positive class
+    # -------------------------
+    # Train & log each model
+    # -------------------------
+    for name, config in model_configs.items():
+        model = config["model"]
+        param_grid = config["params"]
 
-        # Calculate metrics
-        acc = accuracy_score(y_test, y_pred)
-        prec = precision_score(y_test, y_pred)
-        rec = recall_score(y_test, y_pred)
-        f1 = f1_score(y_test, y_pred)
-        roc_auc = roc_auc_score(y_test, y_proba)
+        with mlflow.start_run(run_name=name):
+            grid = GridSearchCV(model, param_grid, cv=5, scoring="roc_auc", n_jobs=-1)
+            grid.fit(X_train, y_train)
+            best_model = grid.best_estimator_
+            y_proba = best_model.predict_proba(X_test)[:, 1] if hasattr(best_model, "predict_proba") else best_model.predict(X_test)
 
-        # Log metrics to MLflow
-        mlflow.log_metric("accuracy", acc)
-        mlflow.log_metric("precision", prec)
-        mlflow.log_metric("recall", rec)
-        mlflow.log_metric("f1_score", f1)
-        mlflow.log_metric("roc_auc", roc_auc)
+            # -------------------------
+            # Metrics
+            # -------------------------
+            roc_auc = roc_auc_score(y_test, y_proba)
+            mlflow.log_params(grid.best_params_)
+            mlflow.log_metric("roc_auc", roc_auc)
 
-        # Log model to MLflow
-        mlflow.sklearn.log_model(model, name)
+            # -------------------------
+            # Log model artifact to MLflow (DagsHub)
+            # -------------------------
+            mlflow.sklearn.log_model(
+                sk_model=best_model,
+                artifact_path=name  # saves in run/artifacts/<model_name>
+            )
 
-        # Save model locally for DVC tracking
-        joblib.dump(model, f"models/{name}.pkl")
+            # -------------------------
+            # Save pickle locally
+            # -------------------------
+            local_path = os.path.join("models", f"{name}.pkl")
+            joblib.dump(best_model, local_path)
+            print(f"{name} | ROC-AUC={roc_auc:.4f} | Saved local model: {local_path}")
 
-        # Print results
-        print(f"{name} Results:")
-        print(f"Accuracy: {acc:.4f}")
-        print(f"Precision: {prec:.4f}")
-        print(f"Recall: {rec:.4f}")
-        print(f"F1 Score: {f1:.4f}")
-        print(f"ROC-AUC: {roc_auc:.4f}")
-        print("-" * 50)
+            # -------------------------
+            # Track best model
+            # -------------------------
+            if roc_auc > best_roc_auc:
+                best_roc_auc = roc_auc
+                best_model_name = name
+                mlflow.set_tag("best_model", name)
 
-print("✅ Training complete. Models saved in 'models/' and logged to MLflow.")
+    print(f"✅ Training complete. Best model: {best_model_name}")
+
+if __name__ == "__main__":
+    train_model()

@@ -1,33 +1,41 @@
 stages:
+  ingestion:
+    cmd: python src/ingestion.py
+    deps:
+      - data/raw/Churn Prediction DataSet.csv
+      - src/ingestion.py
+    outs:
+      - data/raw
+
   preprocessing:
     cmd: python src/preprocessing.py
     deps:
-    - data/raw/Churn Prediction DataSet.csv
-    - src/preprocessing.py
+      - data/raw/Churn Prediction DataSet.csv
+      - src/preprocessing.py
     outs:
-    - data/processed/X_train.csv
-    - data/processed/X_test.csv
-    - data/processed/y_train.csv
-    - data/processed/y_test.csv
+      - data/processed/X_train.csv
+      - data/processed/X_test.csv
+      - data/processed/y_train.csv
+      - data/processed/y_test.csv
 
   train:
-    cmd: python3 src/train.py
+    cmd: python src/train.py
     deps:
-    - data/processed/X_test.csv
-    - data/processed/X_train.csv
-    - data/processed/y_test.csv
-    - data/processed/y_train.csv
-    - src/train.py
+      - data/processed/X_train.csv
+      - data/processed/X_test.csv
+      - data/processed/y_train.csv
+      - data/processed/y_test.csv
+      - src/train.py
     outs:
-    - models
+      - models
 
   evaluate:
-    cmd: python3 src/evaluate.py
+    cmd: python src/evaluate.py
     deps:
-    - data/processed/X_test.csv
-    - data/processed/y_test.csv
-    - models
-    - src/evaluate.py
+      - data/processed/X_test.csv
+      - data/processed/y_test.csv
+      - models
+      - src/evaluate.py
     outs:
-    - evaluation
+      - evaluation
 
