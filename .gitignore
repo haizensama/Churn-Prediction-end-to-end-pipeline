@@ -28,3 +28,5 @@ models_local/
 build/
 dist/
 *.egg-info/
+
+models/
