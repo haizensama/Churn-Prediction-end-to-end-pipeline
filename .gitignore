@@ -1,28 +1,30 @@
-# Virtual Environment
+# Virtual environments
 venv/
+airflow_venv/
 
 # Python cache
 __pycache__/
 *.pyc
-
-# DVC data
-/data/raw/*
-/data/processed/*
-!data/raw/*.dvc
-!data/processed/*.dvc
-
-# MLflow
-mlruns/
-
-# Airflow
-airflow.db
-logs/
-
-# Models
-models/*.pkl
+*.pyo
 
 # OS files
 .DS_Store
 Thumbs.db
-/models
-/evaluation
+
+# Logs
+*.log
+
+# Local MLflow tracking
+mlruns/
+mlflow.db
+
+# Local models (not needed)
+models_local/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Build files
+build/
+dist/
+*.egg-info/
