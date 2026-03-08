@@ -1,0 +1,37 @@
+{
+  "data": [
+    {
+      "gender": 1,
+      "SeniorCitizen": 1,
+      "Partner": 0,
+      "Dependents": 0,
+      "tenure": 1,
+      "PhoneService": 1,
+      "PaperlessBilling": 1,
+      "MonthlyCharges": 120.00,
+      "TotalCharges": 120.00,
+      "MultipleLines_No phone service": 0,
+      "MultipleLines_Yes": 1,
+      "InternetService_Fiber optic": 1,
+      "InternetService_No": 0,
+      "OnlineSecurity_No internet service": 0,
+      "OnlineSecurity_Yes": 0,
+      "OnlineBackup_No internet service": 0,
+      "OnlineBackup_Yes": 0,
+      "DeviceProtection_No internet service": 0,
+      "DeviceProtection_Yes": 0,
+      "TechSupport_No internet service": 0,
+      "TechSupport_Yes": 0,
+      "StreamingTV_No internet service": 0,
+      "StreamingTV_Yes": 1,
+      "StreamingMovies_No internet service": 0,
+      "StreamingMovies_Yes": 1,
+      "Contract_One year": 0,
+      "Contract_Two year": 0,
+      "PaymentMethod_Credit card (automatic)": 0,
+      "PaymentMethod_Electronic check": 1,
+      "PaymentMethod_Mailed check": 0
+    }
+  ]
+}
+
