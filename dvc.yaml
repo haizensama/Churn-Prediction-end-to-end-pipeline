@@ -2,10 +2,17 @@ stages:
   ingestion:
     cmd: python src/ingestion.py
     deps:
-      - data/raw/Churn Prediction DataSet.csv
+      - data/external/Churn Prediction DataSet.csv
       - src/ingestion.py
     outs:
       - data/raw
+
+  validation:
+    cmd: python src/validation.py
+    deps:
+      - data/raw/Churn Prediction DataSet.csv
+      - src/validation.py
+    outs: []
 
   preprocessing:
     cmd: python src/preprocessing.py
@@ -38,4 +45,11 @@ stages:
       - src/evaluate.py
     outs:
       - evaluation
+
+  register:
+    cmd: python src/register.py
+    deps:
+      - src/register.py
+      - models
+    outs: []
 
