@@ -2,7 +2,7 @@ stages:
   ingestion:
     cmd: python src/ingestion.py
     deps:
-      - data/external/Churn Prediction DataSet.csv
+      - data/external/telco_churn.csv
       - src/ingestion.py
     outs:
       - data/raw

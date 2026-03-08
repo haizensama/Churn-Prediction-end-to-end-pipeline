@@ -9,8 +9,8 @@ stages:
       size: 971241
     - path: src/preprocessing.py
       hash: md5
-      md5: 21dd4ec686422ae3ce944af1a9c227f4
-      size: 3092
+      md5: 1b929c3a39fa0c474656d5d14e80c955
+      size: 4087
     outs:
     - path: data/processed/X_test.csv
       hash: md5
@@ -29,7 +29,7 @@ stages:
       md5: c9b61327d9c9b8b3d1a988e0ba0d7f3d
       size: 11274
   train:
-    cmd: python3 src/train.py
+    cmd: python src/train.py
     deps:
     - path: data/processed/X_test.csv
       hash: md5
@@ -49,16 +49,16 @@ stages:
       size: 11274
     - path: src/train.py
       hash: md5
-      md5: 9dd82c5703469b4295a56a8e8e9cd5a3
-      size: 2634
+      md5: 28d82ab63f7b0ecc9c73daef5b6e3fc1
+      size: 3976
     outs:
     - path: models
       hash: md5
-      md5: 6314f59439757fc9e4aaa2d976bf158a.dir
-      size: 19334031
+      md5: 8e0738a3ffce0eb78ca9b6c3345e2b37.dir
+      size: 5798927
       nfiles: 3
   evaluate:
-    cmd: python3 src/evaluate.py
+    cmd: python src/evaluate.py
     deps:
     - path: data/processed/X_test.csv
       hash: md5
@@ -70,16 +70,56 @@ stages:
       size: 2824
     - path: models
       hash: md5
-      md5: 6314f59439757fc9e4aaa2d976bf158a.dir
-      size: 19334031
+      md5: 8e0738a3ffce0eb78ca9b6c3345e2b37.dir
+      size: 5798927
       nfiles: 3
     - path: src/evaluate.py
       hash: md5
-      md5: 4e7417a854c2d6f73932ef756b5a8272
-      size: 3062
+      md5: 41335ead84397ff70b7961e1af340037
+      size: 4816
     outs:
     - path: evaluation
       hash: md5
-      md5: ffa265c7103aafcd0a16c6a98400951b.dir
-      size: 162990
+      md5: 29bc45d305a350e6b0844c872633bfd0.dir
+      size: 162833
       nfiles: 6
+  ingestion:
+    cmd: python src/ingestion.py
+    deps:
+    - path: data/external/telco_churn.csv
+      hash: md5
+      md5: 0f9de68e012bd3aed5fa7cdc9fc421af
+      size: 977501
+    - path: src/ingestion.py
+      hash: md5
+      md5: 8bf181d838ff6ab92c4108faa764812a
+      size: 454
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: b0923aaa718cc52b59838662d063ca3c.dir
+      size: 971241
+      nfiles: 1
+  validation:
+    cmd: python src/validation.py
+    deps:
+    - path: data/raw/Churn Prediction DataSet.csv
+      hash: md5
+      md5: 8cac3095fcf1fdc5d276164ba877e721
+      size: 971241
+    - path: src/validation.py
+      hash: md5
+      md5: 4b21a6a8e6bb7bfc51eebda71b5f9b66
+      size: 281
+  register:
+    cmd: python src/register.py
+    deps:
+    - path: models
+      hash: md5
+      md5: 8e0738a3ffce0eb78ca9b6c3345e2b37.dir
+      size: 5798927
+      nfiles: 3
+    - path: src/register.py
+      hash: md5
+      md5: c5c91e77f2b573ae960d91a7478ce1bd
+      size: 3146
