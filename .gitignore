@@ -29,6 +29,7 @@ build/
 dist/
 *.egg-info/
 
+# model files
 models/
 /models
 /evaluation
