@@ -200,7 +200,7 @@ docker run -p 8000:8000 churn-api
 ### 1️⃣ Clone Repository
 
 ```bash
-git clone <your-repo-url>
+git clone <https://github.com/haizensama/Churn-Prediction-end-to-end-pipeline>
 cd churn-mlops-project
 ```
 
